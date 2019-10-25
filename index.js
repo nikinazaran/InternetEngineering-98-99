@@ -43,15 +43,13 @@ app.get('/gis/testpoint', (req, res) => {
 
 app.put('/gis/addpolygon', express.json(), (req, res) => {
     map.features.push(req.body);
-    console.log(map);
     fs.writeFileSync('./NY.json', JSON.stringify(map), 'utf8', (err) => {
         if (err) {
             console.log("not working!");
         }
     });
     res.send("Succesfully added to map.")
-    process.exit(1);
 });
 
 
-app.listen(port, () => console.log(`HW1 app listening on port ${port}!`))
+app.listen(process.env.PORT | port, () => console.log(`HW1 app listening on port ${port}!`))
