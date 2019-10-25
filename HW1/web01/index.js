@@ -1,32 +1,57 @@
 const express = require('express')
-const whiskers = require('whiskers') 
+const whiskers = require('whiskers')
+const fs = require('fs');
+//var pig = require('point-in-geopolygon')
+var bpip = require('@turf/boolean-point-in-polygon')
+var tpoint = require('turf-point')
+var tpolygon = require('turf-polygon')
+var bodyParser = require('body-parser');
+
+var NYcontents = fs.readFileSync('./NY.json');
+var map = JSON.parse(NYcontents);
 
 const app = express()
 const port = 3000
 
+// app.use(bodyParser.urlencoded({
+//     extended: true
+// }));
+// app.use(bodyParser.json());
+
 console.log('--------------------------- NEW APP ')
-app.use('/' , (req, res, next)=>{
+app.use('/', (req, res, next) => {
     console.log('Middleware Called!')
     next();
 });
 
-app.get('/', (req, res) => {
+app.get('/gis/testpoint', (req, res) => {
     console.log(req.query)
-    
 
-    res.send( whiskers.render(`
-        <html>
-        <body>
-        <h1>Hello team a new rendering engine is out!</h1>
-        <ul>
-            <li>Foo is:{query.foo}</li>
-            <li>Bar is:{query.bar}</li>
-        <ul>
-        </body>
-        </html>
-    `, req))
+    locs = {
+        "polygons": []
+    };
+
+
+    map.features.forEach(polygon => {
+        if (bpip.default(tpoint([req.query.long, req.query.lat]), tpolygon(polygon.geometry.coordinates))) {
+            locs.polygons.push(polygon.properties.name);
+        }
+    });
+
+    res.send(locs);
+});
+
+app.put('/gis/addpolygon', express.json(), (req, res) => {
+    map.features.push(req.body);
+    console.log(map);
+    fs.writeFileSync('./NY.json', JSON.stringify(map), 'utf8', (err) => {
+        if (err) {
+            console.log("not working!");
+        }
+    });
+    res.send("Succesfully added to map.")
+    process.exit(1);
 });
 
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
-
+app.listen(port, () => console.log(`HW1 app listening on port ${port}!`))
