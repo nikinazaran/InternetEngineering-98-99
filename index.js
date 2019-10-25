@@ -52,4 +52,4 @@ app.put('/gis/addpolygon', express.json(), (req, res) => {
 });
 
 
-app.listen(process.env.PORT | port, () => console.log(`HW1 app listening on port ${port}!`))
+app.listen(process.env.PORT || port, () => console.log(`HW1 app listening on port ${port}!`))
